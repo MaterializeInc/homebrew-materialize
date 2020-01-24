@@ -24,5 +24,19 @@ the Materialize homebrew package.
    ```
 1. Commit the updates to `Formula/materialize.rb` to this repository.
 
+### FAQ
+
+- Why are we storing the tarball in S3?
+
+    Two reasons!
+    
+    First, to use a tarball directly from a Github repository, the repo needs 
+    to be public (Materialize is not currently public). 
+    
+    Second, I have configured
+    a secondary S3 bucket (`homebrew-materialize-logging`) to log each time something
+    is downloaded from `homebrew-materialize`. Hopefully we can use this to 
+    track downloads and traction over time!
+
    
 
