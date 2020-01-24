@@ -19,7 +19,7 @@ class Materialize < Formula
   end
 
   test do
-    # todo@jldlaughlin: write a real test!
-    system "true"
+    # todo: Write a better test!
+    system "#{bin}/materialized", "--version"
   end
 end
