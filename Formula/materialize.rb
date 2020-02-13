@@ -1,9 +1,9 @@
 class Materialize < Formula
   desc "Official Materialize command-line interface"
   homepage "https://materialize.io/docs/"
-  url "https://homebrew-materialize.s3.us-east-2.amazonaws.com/materialize.tar.gz"
-  version "beta"
-  sha256 "d3cd6a36a7e8444ae2e421b960d8044a3d4f15292e0eb4ab77fdb6fab4eb0ac2"
+  url "https://github.com/MaterializeInc/materialize/archive/v0.1.0.tar.gz"
+  version "v0.1.0"
+  sha256 "07570f3658f57fceee43bb0fb38abbabedb92008"
 
   depends_on "rust" => :build
   # cmake is required for rdkafka because it depends on librdkafka
@@ -13,7 +13,7 @@ class Materialize < Formula
     # Materialize uses a procedural macro that invokes "git" in order to embed
     # the current SHA in the built binary. The MZ_DEV_BUILD_SHA variable
     # blocks that macro from running at build-time.
-    ENV['MZ_DEV_BUILD_SHA'] = "d3cd6a36a7e8444ae2e421b960d8044a3d4f15292e0eb4ab77fdb6fab4eb0ac2"
+    ENV['MZ_DEV_BUILD_SHA'] = "07570f3658f57fceee43bb0fb38abbabedb92008"
     system "cargo", "build", "--release", "--bin", "materialized"
     bin.install "target/release/materialized"
   end

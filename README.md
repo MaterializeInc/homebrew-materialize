@@ -3,40 +3,27 @@
 This repository contains all components and information about 
 the Materialize homebrew package.
 
-### How to update the Materialize homebrew distribution
+### To Install Materialize
 
-1. Check out the MaterializeInc/materialize repo locally.
-   Ensure the `master` branch of materialize has the changes you
-   want (you can run `git log` to confirm).
-1. In your terminal, navigate to the root of the materialize repo.
-   Build a tarball using the following command replacing the {date} 
-   parameter:
-   ```shell script
-    git archive --format=tar.gz -o /tmp/materialize-{date}.tar.gz --prefix=materialize/ master
-   ```
-1. Drop the newly created tarball into the `homebrew-materialize` AWS 
-   S3 bucket.
-1. Update the materialize SHA in `Formula/materialize.rb` to match
-   the SHA of the newly created tarball.
-1. Ensure `brew install` still works by running:
-   ```shell script
-   brew install --verbose --debug materialize 
-   ```
-1. Commit the updates to `Formula/materialize.rb` to this repository.
+To install Materialize via Homebrew, run the following two commands:
+```shell script
+brew tap MaterializeInc/homebrew-materialize
+brew install materialize
+```
 
-### FAQ
+### Internal use: Update the Formula
 
-- Why are we storing the tarball in S3?
+To update the version of Materialize distributed by this Homebrew
+Formula, make the following changes:
+- Update the `url` attribute to point to the correct release tarball.
+- Update the `commit` attribute (and the `MZ_DEV_BUILD_SHA` attribute)
+  to use the most recent commit from the targeted release.
+  
+Test that you can pull it down locally! `cd` to this repo and run:
+```shell script
+brew install --verbose --debug materialize
+```
 
-    Two reasons!
-    
-    First, to use a tarball directly from a Github repository, the repo needs 
-    to be public (Materialize is not currently public). 
-    
-    Second, I have configured
-    a secondary S3 bucket (`homebrew-materialize-logging`) to log each time something
-    is downloaded from `homebrew-materialize`. Hopefully we can use this to 
-    track downloads and traction over time!
-
+Then, just submit a PR and merge!
    
 
