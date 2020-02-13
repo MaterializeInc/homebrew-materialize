@@ -3,7 +3,7 @@ class Materialize < Formula
   homepage "https://materialize.io/docs/"
   url "https://github.com/MaterializeInc/materialize/archive/v0.1.0.tar.gz"
   version "v0.1.0"
-  sha256 "43de4b569f4a377529287bf7b3a62e6b000f307617cbc9463dda425ba7b6d2dc"
+  sha256 "2bf26562eb1f5eb20ff661781b07e4714a9a2f934d5131b3705a2ba15c558431"
 
   depends_on "rust" => :build
   # cmake is required for rdkafka because it depends on librdkafka
