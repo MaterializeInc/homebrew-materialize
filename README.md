@@ -16,8 +16,14 @@ brew install materialize
 To update the version of Materialize distributed by this Homebrew
 Formula, make the following changes:
 - Update the `url` attribute to point to the correct release tarball.
-- Update the `commit` attribute (and the `MZ_DEV_BUILD_SHA` attribute)
-  to use the most recent commit from the targeted release.
+- Update the `sha256` attribute. To get the new checksum, download the
+  tarball of the target Materialize release and run:
+  ```shell script
+  curl -L "https://github.com/MaterializeInc/materialize/archive/<version_you_want>.tar.gz" -o materialize.tar.gz
+  openssl sha256 materialize.tar.gz
+  ```
+- Update the `MZ_DEV_BUILD_SHA` to use the most recent Git commit
+  from the targeted release.
   
 Test that you can pull it down locally! `cd` to this repo and run:
 ```shell script
