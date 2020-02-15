@@ -2,22 +2,36 @@ class Materialized < Formula
   desc "The streaming data warehouse"
   homepage "https://materialize.io/docs/"
   url "https://github.com/MaterializeInc/materialize/archive/v0.1.0.tar.gz"
-  version "v0.1.0"
   sha256 "2bf26562eb1f5eb20ff661781b07e4714a9a2f934d5131b3705a2ba15c558431"
+  head "https://github.com/MaterializeInc/materialize.git"
 
-  depends_on "rust" => :build
-  # cmake is required for rdkafka because it depends on librdkafka
+  bottle do
+    root_url "https://downloads.mtrlz.dev"
+  end
+
   depends_on "cmake" => :build
+  depends_on "rust" => :build
 
-  BUILD_SHA = "07570f3658f57fceee43bb0fb38abbabedb92008"
+  STABLE_BUILD_SHA = "07570f3658f57fceee43bb0fb38abbabedb92008".freeze
+
+  def build_sha
+    if head?
+      version.commit
+    elsif stable?
+      STABLE_BUILD_SHA
+    else
+      raise(FormulaSpecificationError, "sha for devel spec not specified")
+    end
+  end
 
   def install
     # Materialize uses a procedural macro that invokes "git" in order to embed
     # the current SHA in the built binary. The MZ_DEV_BUILD_SHA variable
     # blocks that macro from running at build-time.
-    ENV["MZ_DEV_BUILD_SHA"] = BUILD_SHA
-    system "cargo", "build", "--release", "--bin", "materialized"
-    bin.install "target/release/materialized"
+    ENV["MZ_DEV_BUILD_SHA"] = STABLE_BUILD_SHA if stable?
+    system "cargo", "install", "--locked",
+                               "--root", prefix,
+                               "--path", "src/materialized"
   end
 
   test do
@@ -27,7 +41,7 @@ class Materialized < Formula
     sleep 2
 
     output = shell_output("curl 127.0.0.1:6875")
-    assert_includes output, BUILD_SHA
+    assert_includes output, build_sha
   ensure
     Process.kill(9, pid)
     Process.wait(pid)
