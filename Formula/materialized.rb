@@ -7,12 +7,13 @@ class Materialized < Formula
 
   bottle do
     root_url "https://downloads.mtrlz.dev"
+    sha256 "90c97cf014dc846c3f5f223de3e8b96a0037d37f012e7a5d7277fa664e8208e5" => :catalina
   end
 
   depends_on "cmake" => :build
   depends_on "rust" => :build
 
-  STABLE_BUILD_SHA = "07570f3658f57fceee43bb0fb38abbabedb92008".freeze
+  STABLE_BUILD_SHA = "e1d9709126168ee0cb0257f3515c3373857c3f4e".freeze
 
   def build_sha
     if head?

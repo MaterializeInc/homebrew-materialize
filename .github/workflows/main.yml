@@ -1,0 +1,40 @@
+name: CI
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Test materialized formula
+      run: |
+        set -euo pipefail
+        mkdir -p "$(dirname $(brew --repo ${{github.repository}}))"
+        cp -a "$GITHUB_WORKSPACE" "$(brew --repo ${{github.repository}})"
+        brew install gnu-tar
+        metadata=$(brew info --json materialized)
+        version=$(jq -r .[0].versions.stable <<< "$metadata")
+        bottle_hash=$(jq -r .[0].bottle.stable.files.catalina.sha256 <<< "$metadata")
+        sha=$(git ls-remote https://github.com/MaterializeInc/materialize.git "v$version^{}" | cut -f1)
+        echo "::set-env name=MATERIALIZED_VERSION::$version"
+        echo "version=$version" "sha=$sha" "bottle_hash=$bottle_hash"
+        set -x
+        brew install materialized
+        brew audit materialized --online --strict
+        brew style materialized
+        brew linkage --test materialized
+        brew test materialized --verbose
+        set +x
+        if ! materialized --version 2>&1 | grep "$sha"; then
+          echo "materialized --version reports wrong version" >&2
+          materialized --version
+          exit 1
+        fi
+        bin/mkbottle "$version"
+        echo "$bottle_hash  materialized-$version.catalina.bottle.tar.gz" | shasum -a 256 --check
+    - uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: materialized.catalina.bottle.tar.gz
+        path: materialized-${{env.MATERIALIZED_VERSION}}.catalina.bottle.tar.gz
