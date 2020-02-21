@@ -68,7 +68,7 @@ sed "/^  bottle do/,/^  end/d" "$OLDPWD/Formula/materialized.rb" > "$prefix/.bre
 # Make the tarballs reproducible (given an official Materialize release tarball)
 # so that CI can check that the bottle it downloads is, in fact, the output of
 # this script at the tested revision.
-bottle="$OLDPWD/materialized-$version.catalina.bottle.tar.gz"
+bottle="$OLDPWD/materialized-$version.high_sierra.bottle.tar.gz"
 gtar \
   --sort=name \
   --mtime="./$prefix/bin/materialized" \
@@ -78,7 +78,7 @@ gtar \
   | gzip -n > "$bottle"
 
 if [[ ! "${GITHUB_WORKFLOW:-}" ]]; then
-  s3_path="s3://downloads.mtrlz.dev/materialized-$version.catalina.bottle.tar.gz"
+  s3_path="s3://downloads.mtrlz.dev/materialized-$version.high_sierra.bottle.tar.gz"
   aws s3 cp --acl public-read "$bottle" "$s3_path"
   echo "uploaded bottle to $s3_path"
   shasum -a 256 "$bottle"
