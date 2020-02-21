@@ -15,7 +15,7 @@ jobs:
         brew install gnu-tar
         metadata=$(brew info --json materialized)
         version=$(jq -r .[0].versions.stable <<< "$metadata")
-        bottle_hash=$(jq -r .[0].bottle.stable.files.catalina.sha256 <<< "$metadata")
+        bottle_hash=$(jq -r .[0].bottle.stable.files.high_sierra.sha256 <<< "$metadata")
         sha=$(git ls-remote https://github.com/MaterializeInc/materialize.git "v$version^{}" | cut -f1)
         echo "::set-env name=MATERIALIZED_VERSION::$version"
         echo "version=$version" "sha=$sha" "bottle_hash=$bottle_hash"
@@ -32,9 +32,9 @@ jobs:
           exit 1
         fi
         bin/mkbottle "$version"
-        echo "$bottle_hash  materialized-$version.catalina.bottle.tar.gz" | shasum -a 256 --check
+        echo "$bottle_hash  materialized-$version.high_sierra.bottle.tar.gz" | shasum -a 256 --check
     - uses: actions/upload-artifact@v1
       if: failure()
       with:
-        name: materialized.catalina.bottle.tar.gz
-        path: materialized-${{env.MATERIALIZED_VERSION}}.catalina.bottle.tar.gz
+        name: materialized.high_sierra.bottle.tar.gz
+        path: materialized-${{env.MATERIALIZED_VERSION}}.high_sierra.bottle.tar.gz
