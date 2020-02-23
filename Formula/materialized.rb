@@ -1,8 +1,8 @@
 class Materialized < Formula
   desc "The streaming data warehouse"
   homepage "https://materialize.io/docs/"
-  url "https://github.com/MaterializeInc/materialize/archive/v0.1.0.tar.gz"
-  sha256 "2bf26562eb1f5eb20ff661781b07e4714a9a2f934d5131b3705a2ba15c558431"
+  url "https://github.com/MaterializeInc/materialize/archive/v0.1.1.tar.gz"
+  sha256 "42e6a7d32615e3097ec50ba644ae6d47ead87ac58fb0bf5eb29da977614511b9"
   head "https://github.com/MaterializeInc/materialize.git"
 
   bottle do
@@ -12,8 +12,7 @@ class Materialized < Formula
 
   depends_on "cmake" => :build
   depends_on "rust" => :build
-
-  STABLE_BUILD_SHA = "e1d9709126168ee0cb0257f3515c3373857c3f4e".freeze
+  STABLE_BUILD_SHA = "2cbdedae2c98f239682c59b450d6f16960e3b827".freeze
 
   def build_sha
     if head?
