@@ -7,7 +7,7 @@ class Materialized < Formula
 
   bottle do
     root_url "https://downloads.mtrlz.dev"
-    sha256 "1741ce67a3e7408b965876c76a910734380314e27c2486ee66ff9277611b225b" => :high_sierra
+    sha256 "7b9cfe7a816cbda450ca4b0435c1481a72d4a81a2b59a878588132a288afc581" => :high_sierra
   end
 
   depends_on "cmake" => :build
