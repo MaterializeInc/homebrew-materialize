@@ -12,7 +12,7 @@ class Materialized < Formula
 
   depends_on "cmake" => :build
   depends_on "rust" => :build
- 
+
   STABLE_BUILD_SHA = "2cbdedae2c98f239682c59b450d6f16960e3b827".freeze
 
   def build_sha
