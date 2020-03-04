@@ -8,6 +8,14 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Test materialized formula
+      # Ideally we would test a) building from source for the current
+      # version, b) building from source for HEAD, and c) pouring the pre-built
+      # bottle. Unfortunately building from source on GitHub VMs takes 30m+,
+      # so presently we only truly test the bottle (c).
+      #
+      # To have some confidence in (a) and (b), we use `brew fetch` to
+      # at least validate the source tarball and Git repository, respectively,
+      # can be retrieved by Homebrew.
       run: |
         set -euo pipefail
         mkdir -p "$(dirname $(brew --repo ${{github.repository}}))"
@@ -20,6 +28,8 @@ jobs:
         echo "::set-env name=MATERIALIZED_VERSION::$version"
         echo "version=$version" "sha=$sha" "bottle_hash=$bottle_hash"
         set -x
+        brew fetch --build-from-source materialized
+        brew fetch --HEAD materialized
         brew install materialized
         brew audit materialized --online --strict
         brew style materialized
