@@ -1,18 +1,19 @@
 class Materialized < Formula
   desc "The streaming data warehouse"
   homepage "https://materialize.io/docs/"
-  url "https://github.com/MaterializeInc/materialize/archive/v0.1.1.tar.gz"
-  sha256 "42e6a7d32615e3097ec50ba644ae6d47ead87ac58fb0bf5eb29da977614511b9"
+  url "https://github.com/MaterializeInc/materialize/archive/v0.1.2.tar.gz"
+  sha256 "937e2ee2f4ca81c718403b76375eba07b5fad5a9414b997599addb48ee17e25f"
   head "https://github.com/MaterializeInc/materialize.git"
 
   bottle do
     root_url "https://downloads.mtrlz.dev"
-    sha256 "7b9cfe7a816cbda450ca4b0435c1481a72d4a81a2b59a878588132a288afc581" => :high_sierra
+    sha256 "0fbc08b12926ec6408c38de5dcc6b9b960780d1bef020a98fd37b4a37fe7495a" => :high_sierra
   end
 
   depends_on "cmake" => :build
   depends_on "rust" => :build
-  STABLE_BUILD_SHA = "2cbdedae2c98f239682c59b450d6f16960e3b827".freeze
+
+  STABLE_BUILD_SHA = "c8a6eb384e06614ed9df837ddce48bd0c198383b".freeze
 
   def build_sha
     if head?
@@ -42,6 +43,9 @@ class Materialized < Formula
 
     output = shell_output("curl 127.0.0.1:6875")
     assert_includes output, build_sha
+
+    output = shell_output("materialized --version").chomp
+    assert_equal output, "materialized v#{version} (#{build_sha})"
   ensure
     Process.kill(9, pid)
     Process.wait(pid)
