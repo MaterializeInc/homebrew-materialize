@@ -24,7 +24,7 @@ trap "rm -rf $tmpdir" EXIT
 # release binaries on GitHub's macOS infrastructure is unbearably slow.
 #
 # [0]: https://jonathanchang.org/blog/maintain-your-own-homebrew-repository-with-binary-bottles/
-curl -L https://downloads.mtrlz.dev/materialized-v$version-x86_64-apple-darwin.tar.gz | tar x
+curl -L https://downloads.mtrlz.dev/materialized-v$version-x86_64-apple-darwin.tar.gz | tar xz
 mv materialized materialized.orig
 mkdir -p "$prefix/.brew"
 mv materialized.orig/* "$prefix"
@@ -69,7 +69,12 @@ sed "/^  bottle do/,/^  end/d" "$OLDPWD/Formula/materialized.rb" > "$prefix/.bre
 # so that CI can check that the bottle it downloads is, in fact, the output of
 # this script at the tested revision.
 bottle="$OLDPWD/materialized-$version.high_sierra.bottle.tar.gz"
-gtar \
+if tar --version | grep -q "GNU tar"; then
+  TAR_CMD=tar
+else
+  TAR_CMD=gtar
+fi
+"$TAR_CMD" \
   --sort=name \
   --mtime="./$prefix/bin/materialized" \
   --owner=0 --group=0 --numeric-owner \
@@ -78,8 +83,16 @@ gtar \
   | gzip -n > "$bottle"
 
 if [[ ! "${GITHUB_WORKFLOW:-}" ]]; then
-  s3_path="s3://downloads.mtrlz.dev/materialized-$version.high_sierra.bottle.tar.gz"
-  aws s3 cp --acl public-read "$bottle" "$s3_path"
-  echo "uploaded bottle to $s3_path"
+  curl -n -f -X POST -H "Content-Type: application/json" -d "
+    {
+        \"name\": \"$version\",
+        \"vcs_tag\": \"v$version\",
+    }" \
+    https://api.bintray.com/packages/materialize/homebrew/materialized/versions
+  echo
+  echo "Created Bintray version"
+  curl -n -f -T "$bottle" "https://api.bintray.com/content/materialize/homebrew/materialized/$version/materialized-$version.high_sierra.bottle.tar.gz;publish=1"
+  echo
+  echo "Uploaded and published bottle to Bintray"
   shasum -a 256 "$bottle"
 fi

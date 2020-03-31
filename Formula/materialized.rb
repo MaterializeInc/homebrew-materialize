@@ -6,8 +6,8 @@ class Materialized < Formula
   head "https://github.com/MaterializeInc/materialize.git"
 
   bottle do
-    root_url "https://downloads.mtrlz.dev"
-    sha256 "a14fb6a49a4f5e52e08ea37e02f0abf7f35889f92ba33017e428fbeac41fca20" => :high_sierra
+    root_url "https://packages.materialize.io/homebrew"
+    sha256 "84f9b4c05680e3e84f0f1f0af6a0dafc293624f3cccee8faabb7e95096dfa8a9" => :high_sierra
   end
 
   depends_on "cmake" => :build
