@@ -21,6 +21,8 @@ jobs:
         mkdir -p "$(dirname $(brew --repo ${{github.repository}}))"
         cp -a "$GITHUB_WORKSPACE" "$(brew --repo ${{github.repository}})"
         brew install gnu-tar
+        brew install gzip
+        hash -r gzip
         metadata=$(brew info --json materialized)
         version=$(jq -r .[0].versions.stable <<< "$metadata")
         bottle_hash=$(jq -r .[0].bottle.stable.files.high_sierra.sha256 <<< "$metadata")
