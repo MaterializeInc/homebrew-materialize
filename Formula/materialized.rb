@@ -2,7 +2,7 @@ class Materialized < Formula
   desc "The streaming data warehouse"
   homepage "https://materialize.io/docs/"
   url "https://github.com/MaterializeInc/materialize/archive/v0.2.0.tar.gz"
-  sha256 "c0ae3cb4d2a2fb53bbfe55e17eb73c57cb4dd88bee820bfeda4492f94a9f1f94"
+  sha256 "d906f7e972756b0459685492be8788e9580206928ce980e28c7313adc4011dbc"
   head "https://github.com/MaterializeInc/materialize.git"
 
   bottle do
