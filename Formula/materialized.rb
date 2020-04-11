@@ -37,7 +37,7 @@ class Materialized < Formula
 
   test do
     pid = fork do
-      exec bin/"materialized"
+      exec bin/"materialized", "-w1"
     end
     sleep 2
 
