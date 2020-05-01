@@ -3,19 +3,6 @@
 To update the version of Materialize distributed by this tap, make the following
 changes:
 
-- Update the `url` attribute to point to the correct release tarball.
-
-- Update the `sha256` attribute. To get the new checksum, download the
-  tarball of the target Materialize release and checksum it via:
-
-  ```shell
-  curl -L "https://github.com/MaterializeInc/materialize/archive/<version_you_want>.tar.gz" -o materialize.tar.gz
-  openssl sha256 materialize.tar.gz
-  ```
-
-- Update the `STABLE_BUILD_SHA` to reflect the full commit SHA for the
-  selected release.
-
 - Publish a bottle for the new version by running `bin/mkbottle VERSION`.
   You will need a file in `$HOME/.netrc` with a line like the following:
   ```
@@ -25,9 +12,15 @@ changes:
   Note that your API key is not the same as your account password. It can be found
   via [these instructions](https://www.jfrog.com/confluence/display/BT/Uploading#Uploading-GettingyourAPIKey).
 
-- Note the SHA hash printed at the end of the `bin/mkbottle` command, and
-  update the `sha256` attribute under the `bottle` section of `Formula/materialized.rb`
-  accordingly.
+The output of `mkbottle` lists several attributes that you must update in
+`Formula/materialized.rb:
+
+- `url` should point to the correct release tarball.
+- `sha256` should match the tarball at `url`
+- Update the `sha256` attribute under the `bottle` section of
+  `Formula/materialized.rb` with the high_siera bottle sha.
+- Update the `STABLE_BUILD_SHA` to reflect the full commit SHA for the
+  selected release.
 
 Then, submit a PR! CI will automatically test that the formula installs and
 runs properly.
