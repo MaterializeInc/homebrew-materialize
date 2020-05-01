@@ -14,12 +14,19 @@ fi
 
 main() {
     version=$1
+    BOTTLE="$(pwd)/materialized-$version.high_sierra.bottle.tar.gz"
+
+    # download for CI or humans
     download_bottle
 
-    if [[ ! "${GITHUB_WORKFLOW:-}" && ! "${NO_UPLOAD:-}" ]]; then
-        upload_bottle
+    if [[ ! "${GITHUB_WORKFLOW:-}" ]]; then
+        print_metadata
+        read -r -p "Update the formula and press enter when ready "
+        if [[  ! "${NO_UPLOAD:-}" ]]; then
+            upload_bottle
+        fi
+        print_bottle_sha
     fi
-    print_metadata
 }
 
 download_bottle() {
@@ -82,7 +89,6 @@ EOF
     # Make the tarballs reproducible (given an official Materialize release tarball)
     # so that CI can check that the bottle it downloads is, in fact, the output of
     # this script at the tested revision.
-    bottle="$OLDPWD/materialized-$version.high_sierra.bottle.tar.gz"
     if tar --version | grep -q "GNU tar"; then
         TAR_CMD=tar
     else
@@ -94,7 +100,7 @@ EOF
         --owner=0 --group=0 --numeric-owner \
         --pax-option=exthdr.name=%d/PaxHeaders/%f,delete=atime,delete=ctime \
         -c materialized \
-        | gzip -n > "$bottle"
+        | gzip -n > "$BOTTLE"
 
 }
 
@@ -112,7 +118,7 @@ upload_bottle() {
     https://api.bintray.com/packages/materialize/homebrew/materialized/versions
   echo
   echo "Created Bintray version"
-  runv curl -n -f -T "$bottle" "https://api.bintray.com/content/materialize/homebrew/materialized/$version/materialized-$version.high_sierra.bottle.tar.gz;publish=1"
+  runv curl -n -f -T "$BOTTLE" "https://api.bintray.com/content/materialize/homebrew/materialized/$version/materialized-$version.high_sierra.bottle.tar.gz;publish=1"
   echo
   echo "Uploaded and published bottle to Bintray"
 }
@@ -126,14 +132,21 @@ print_metadata() {
   curl -fsSL "https://github.com/MaterializeInc/materialize/archive/v${version}.tar.gz" -o materialize.tar.gz
   mainsha=$(shasum -a 256 materialize.tar.gz | awk '{print $1}')
 
-  hibottlesha=$(shasum -a 256 "$bottle" | awk '{ print $1 }')
-  tag_sha=$(curl -fsSL "https://api.github.com/repos/MaterializeInc/materialize/git/refs/tags/v$version" \
-            | jq ".object.sha")
+  tag_object=$(curl -fsSL "https://api.github.com/repos/MaterializeInc/materialize/git/refs/tags/v$version" \
+            | jq -r ".object.sha")
+  tag_sha=$(curl -fsSL "https://api.github.com/repos/MaterializeInc/materialize/git/tags/$tag_object" \
+         | jq .object.sha)
 
   echo "url                '$archive_url'"
   echo "sha256             '${mainsha}'"
-  echo "sha256             '${hibottlesha}' => :high_sierra"
   echo "STABLE_BUILD_SHA = ${tag_sha}.freeze"
+}
+
+print_bottle_sha() {
+  hibottlesha=$(shasum -a 256 "$BOTTLE" | awk '{ print $1 }')
+  echo "now put this in the Formula/materialized.rb"
+  echo
+  echo "sha256             '${hibottlesha}' => :high_sierra"
 }
 
 runv() {
