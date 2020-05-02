@@ -1,20 +1,7 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
-shopt -s dotglob nullglob
-
-if [[ $# -ne 1 ]]; then
-  echo "usage: $0 VERSION" >&2
-  exit 1
-fi
-
-version=$1
-prefix=materialized/$version
-
-tmpdir=$(mktemp -d)
-cd "$tmpdir"
-trap "rm -rf $tmpdir" EXIT
-
+# Builds the bottle for a new version of materialized.
+#
 # Homebrew wants to manage the bottle-building process via `brew install
 # --build-bottle` and `brew bottle`, but these commands are tightly coupled to
 # the particulars of Homebrew's pull request and CI flow. See [0] for the gory
@@ -23,76 +10,29 @@ trap "rm -rf $tmpdir" EXIT
 # bottle by hand. This saves considerable time in CI (25m+), because building
 # release binaries on GitHub's macOS infrastructure is unbearably slow.
 #
+# Crucially, we make the tarballs reproducible (given an official Materialize
+# release tarball) so that CI can check that the bottle it downloads is, in
+# fact, the output of this script at the tested revision. This requires a good
+# bit of tar magic and a particular version of gzip, so we run the build in a
+# Docker container where we can tightly control the version of tar and gzip.
+#
 # [0]: https://jonathanchang.org/blog/maintain-your-own-homebrew-repository-with-binary-bottles/
-curl -L https://downloads.mtrlz.dev/materialized-v$version-x86_64-apple-darwin.tar.gz | tar xz
-mv materialized materialized.orig
-mkdir -p "$prefix/.brew"
-mv materialized.orig/* "$prefix"
-cat > "$prefix/INSTALL_RECEIPT.json" <<EOF
-{
-  "homebrew_version": null,
-  "used_options": [],
-  "unused_options": [],
-  "built_as_bottle": true,
-  "poured_from_bottle": false,
-  "installed_as_dependency": false,
-  "installed_on_request": true,
-  "changed_files": [
-    "INSTALL_RECEIPT.json"
-  ],
-  "time": null,
-  "source_modified_time": null,
-  "HEAD": null,
-  "stdlib": null,
-  "compiler": "clang",
-  "aliases": [],
-  "runtime_dependencies": [],
-  "source": {
-    "path": "@@HOMEBREW_REPOSITORY@@/Library/Taps/MaterializeInc/homebrew-materialize/Formula/materialized.rb",
-    "tap": "materializeinc/materialize",
-    "spec": "stable",
-    "versions": {
-      "stable": "$version",
-      "devel": "",
-      "head": "HEAD",
-      "version_scheme": 0
-    }
-  }
-}
-EOF
-# Remove the self-referential bottle block using the same technique as
-# Hombrew.
-# See: https://github.com/Homebrew/brew/blob/d0f40eda1/Library/Homebrew/formula_installer.rb#L332
-sed "/^  bottle do/,/^  end/d" "$OLDPWD/Formula/materialized.rb" > "$prefix/.brew/materialized.rb"
 
-# Make the tarballs reproducible (given an official Materialize release tarball)
-# so that CI can check that the bottle it downloads is, in fact, the output of
-# this script at the tested revision.
-bottle="$OLDPWD/materialized-$version.high_sierra.bottle.tar.gz"
-if tar --version | grep -q "GNU tar"; then
-  TAR_CMD=tar
-else
-  TAR_CMD=gtar
-fi
-"$TAR_CMD" \
-  --sort=name \
-  --mtime="./$prefix/bin/materialized" \
-  --owner=0 --group=0 --numeric-owner \
-  --pax-option=exthdr.name=%d/PaxHeaders/%f,delete=atime,delete=ctime \
-  -c materialized \
-  | gzip -n > "$bottle"
+set -euo pipefail
 
-if [[ ! "${GITHUB_WORKFLOW:-}" ]]; then
-  curl -n -f -X POST -H "Content-Type: application/json" -d "
-    {
-        \"name\": \"$version\",
-        \"vcs_tag\": \"v$version\",
-    }" \
-    https://api.bintray.com/packages/materialize/homebrew/materialized/versions
-  echo
-  echo "Created Bintray version"
-  curl -n -f -T "$bottle" "https://api.bintray.com/content/materialize/homebrew/materialized/$version/materialized-$version.high_sierra.bottle.tar.gz;publish=1"
-  echo
-  echo "Uploaded and published bottle to Bintray"
-  shasum -a 256 "$bottle"
+if [[ $# -ne 1 ]]; then
+  echo "usage: $0 VERSION" >&2
+  exit 1
 fi
+
+cd "$(dirname "$0")/.."
+
+version=${1#v}
+
+container=$(docker run --rm -d buildpack-deps:focal-curl sleep 999999)
+trap "docker kill $container > /dev/null" EXIT
+
+docker cp Formula/materialized.rb "$container:/materialized.rb"
+docker cp misc/mkbottle-inner.bash "$container:/mkbottle.bash"
+docker exec -i "$container" bash /mkbottle.bash "$version"
+docker cp "$container:/bottle.tar.gz" bottle.tar.gz
