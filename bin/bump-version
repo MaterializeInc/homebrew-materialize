@@ -13,6 +13,16 @@ cd "$(dirname "$0")/.."
 
 version=${1#v}
 
+echo "Checking Bintray credentials..."
+if ! curl --netrc -fsS https://api.bintray.com/orgs/materialize -o /dev/null; then
+  echo "Unable to perform simple Bintray API request." >&2
+  echo "Have you configured ~/.netrc with a line like the following?" >&2
+  echo >&2
+  echo "    machine api.bintray.com login EMAIL password API_KEY" >&2
+  echo >&2
+  exit 1
+fi
+
 echo "Fetching metadata for materialized v$version..."
 url=https://github.com/MaterializeInc/materialize/archive/v$version.tar.gz
 archive_sha=$(curl -fsSL "$url" | openssl sha256)
