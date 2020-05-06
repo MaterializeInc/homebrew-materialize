@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+
+# Automatically updates the tap for a newly-released version of materialized.
+
+set -euo pipefail
+
+if [[ $# -ne 1 ]]; then
+  echo "usage: $0 VERSION" >&2
+  exit 1
+fi
+
+cd "$(dirname "$0")/.."
+
+version=${1#v}
+
+echo "Fetching metadata for materialized v$version..."
+url=https://github.com/MaterializeInc/materialize/archive/v$version.tar.gz
+archive_sha=$(curl -fsSL "$url" | openssl sha256)
+build_sha=$(git ls-remote https://github.com/MaterializeInc/materialize.git "v$version^{}" | cut -f1)
+
+echo "URL:                    $url"
+echo "Source archive SHA-256: $archive_sha"
+echo "Build commit SHA-1:     $build_sha"
+
+echo "Updating formula for new source tarball..."
+sed -f /dev/stdin Formula/materialized.rb > Formula/materialized.rb.new <<EOF
+/^  url/c\\
+\  url "$url"
+/^  sha256/c\\
+\  sha256 "$archive_sha"
+/^  STABLE_BUILD_SHA/c\\
+\  STABLE_BUILD_SHA = "$build_sha".freeze
+EOF
+mv Formula/materialized.rb{.new,}
+
+echo "Building bottle..."
+bin/mkbottle "$version"
+
+echo "Creating new Bintray version..."
+version_status=$(curl --netrc \
+  -H "Content-Type: application/json" \
+  -d "{\"name\": \"$version\", \"vcs_tag\": \"v$version\"}" \
+  -w "%{http_code}" \
+  -o curl.log \
+  https://api.bintray.com/packages/materialize/homebrew/materialized/versions)
+if [[ "$version_status" != 2[0-9][0-9] && "$version_status" != 409 ]]; then
+  echo "error creating bintray version: $version_status" >&2
+  exit 1
+fi
+
+echo "Uploading bottle to Bintray..."
+curl --netrc -f \
+  -T bottle.tar.gz \
+  -o curl.log \
+  "https://api.bintray.com/content/materialize/homebrew/materialized/$version/materialized-$version.high_sierra.bottle.tar.gz;publish=1"
+
+echo "Updating formula for new bottle SHA..."
+bottle_sha=$(openssl sha256 < bottle.tar.gz)
+echo "Bottle SHA-256: $bottle_sha"
+sed -f /dev/stdin Formula/materialized.rb > Formula/materialized.rb.new <<EOF
+/^    sha256.*=> :high_sierra/c\\
+\    sha256 "$bottle_sha" => :high_sierra
+EOF
+mv Formula/materialized.rb{.new,}
+
+echo "Committing changes on new branch..."
+git checkout -b "v$version"
+git commit -am "v$version"
+
+# Clean up only if everything was successful, to ease debugging failures.
+rm bottle.tar.gz curl.log
