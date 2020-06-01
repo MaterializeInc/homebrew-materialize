@@ -16,11 +16,13 @@ set -euo pipefail
 version=$1
 prefix=materialized/$version
 
+echo "here"
 mkdir -p "$prefix/.brew"
 (cd "$prefix" \
   && curl -L https://downloads.mtrlz.dev/materialized-v$version-x86_64-apple-darwin.tar.gz \
   | tar xz --strip-components=1)
 
+echo "blah"
 cat > "$prefix/INSTALL_RECEIPT.json" <<EOF
 {
   "homebrew_version": null,
