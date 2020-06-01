@@ -1,19 +1,19 @@
 class Materialized < Formula
   desc "The streaming data warehouse"
   homepage "https://materialize.io/docs/"
-  url "https://github.com/MaterializeInc/materialize/archive/v0.2.2.tar.gz"
-  sha256 "dd5a758632cff1dcb81ccd8ce1f5b419871a3648c54d5810a4f10d4c9ac25c86"
+  url "https://github.com/MaterializeInc/materialize/archive/v0.3.0.tar.gz"
+  sha256 "3c67eeefb2d442c3e7772c6e7a932f3a732bb4f552aa0ebbcefe213c619a4e7d"
   head "https://github.com/MaterializeInc/materialize.git"
 
   bottle do
     root_url "https://packages.materialize.io/homebrew"
-    sha256 "553b33753e64d5834e54e5ee2dcc5b9d1995cdef60d532dd818c775544fc7181" => :high_sierra
+    sha256 "8861f1c2840dddc59d9c431d9d310e28c09a2d632cd39fd51f8b048ddc9710da" => :high_sierra
   end
 
   depends_on "cmake" => :build
   depends_on "rust" => :build
 
-  STABLE_BUILD_SHA = "3700b22a50e843117005420e67e3c43e56bfd219".freeze
+  STABLE_BUILD_SHA = "c9408416ed580b6faf12c605c4f230e3deafa407".freeze
 
   def build_sha
     if head?
