@@ -11,6 +11,12 @@ fi
 
 cd "$(dirname "$0")/.."
 
+if ! git diff --exit-code || ! git diff --cached --exit-code ; then
+    echo
+    echo "Refusing to run with a dirty work tree, stash or commit your changes"
+    exit 1
+fi
+
 version=${1#v}
 
 echo "Checking Bintray credentials..."
