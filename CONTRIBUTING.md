@@ -12,7 +12,8 @@ machine api.bintray.com login <your Bintray username> password <your Bintray API
 Note that your API key is not the same as your account password. It can be found
 via [these instructions][bintray-api-key].
 
-Then, run the `bump-version` script for the new version:
+Then, run the `bump-version` script for the new version (version does not include
+the leading `v` in our tags):
 
 ```shell
 $ bin/bump-version VERSION
