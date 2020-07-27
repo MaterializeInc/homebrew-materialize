@@ -3,7 +3,7 @@ class Materialized < Formula
   homepage "https://materialize.io/docs/"
   url "https://github.com/MaterializeInc/materialize/archive/v0.3.1.tar.gz"
   sha256 "e1a7ae7ff4c1dcfeaacf3c781e80aee68b289aca0074c826d30990edad69f578"
-  head "https://github.com/MaterializeInc/materialize.git"
+  head "https://github.com/MaterializeInc/materialize.git", :branch => "main"
 
   bottle do
     root_url "https://packages.materialize.io/homebrew"
