@@ -1,9 +1,9 @@
 class Materialized < Formula
   desc "The streaming data warehouse"
   homepage "https://materialize.io/docs/"
-  url "https://github.com/MaterializeInc/materialize/archive/v0.4.0.tar.gz"
-  sha256 "450fe5375b9da9be98dd6c9ad298835f930da2a8094b0d53f03ad224a381d0ff"
-  head "https://github.com/MaterializeInc/materialize.git", :branch => "main"
+  url "https://github.com/MaterializeInc/materialize/archive/v0.4.1.tar.gz"
+  sha256 "dc3979bf36f5fb953b9a89e231d74043704da7f9fc782319a2857c37648fac71"
+  head "https://github.com/MaterializeInc/materialize.git", branch: "main"
 
   bottle do
     root_url "https://packages.materialize.io/homebrew"
@@ -13,7 +13,7 @@ class Materialized < Formula
   depends_on "cmake" => :build
   depends_on "rust" => :build
 
-  STABLE_BUILD_SHA = "68d30c123a3531224cbd2a92fb33d345461961a7".freeze
+  STABLE_BUILD_SHA = "dab1c09f17ab51bf3cadc092a5b7d8e214560511".freeze
 
   def build_sha
     if head?
@@ -33,6 +33,42 @@ class Materialized < Formula
     system "cargo", "install", "--locked",
                                "--root", prefix,
                                "--path", "src/materialized"
+  end
+
+  def caveats
+    <<~EOS
+      The launchd service will use only one worker thread. For improved
+      performance, consider manually starting materialized and tuning the
+      number of worker threads based on your hardware:
+          materialized --threads=N
+    EOS
+  end
+
+  plist_options manual: "materialized --threads=1"
+
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>ProgramArguments</key>
+        <array>
+          <string>#{opt_bin}/materialized</string>
+          <string>--data-directory=#{var}/materialized</string>
+          <string>--threads=1</string>
+        </array>
+        <key>WorkingDirectory</key>
+        <string>#{var}</string>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>KeepAlive</key>
+        <true/>
+      </dict>
+      </plist>
+    EOS
   end
 
   test do
