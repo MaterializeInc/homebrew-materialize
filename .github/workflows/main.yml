@@ -28,7 +28,7 @@ jobs:
         version=$(jq -r .[0].versions.stable <<< "$metadata")
         bottle_hash=$(jq -r .[0].bottle.stable.files.high_sierra.sha256 <<< "$metadata")
         sha=$(git ls-remote https://github.com/MaterializeInc/materialize.git "v$version^{}" | cut -f1)
-        echo "::set-env name=MATERIALIZED_VERSION::$version"
+        echo "MATERIALIZED_VERSION=$version" >> "$GITHUB_ENV"
         echo "version=$version" "sha=$sha" "bottle_hash=$bottle_hash"
         set -x
         brew fetch --build-from-source materialized
