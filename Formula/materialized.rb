@@ -1,9 +1,9 @@
 class Materialized < Formula
-  desc "The streaming data warehouse"
+  desc "Streaming SQL database powered by Timely Dataflow"
   homepage "https://materialize.io/docs/"
   url "https://github.com/MaterializeInc/materialize/archive/v0.5.2.tar.gz"
   sha256 "347a5711c555077e706cc6834a226662152652a278e9bf67038a043e7a7a753a"
-  head "https://github.com/MaterializeInc/materialize.git"
+  head "https://github.com/MaterializeInc/materialize.git", branch: "main"
 
   bottle do
     root_url "https://packages.materialize.io/homebrew"
@@ -33,6 +33,42 @@ class Materialized < Formula
     system "cargo", "install", "--locked",
                                "--root", prefix,
                                "--path", "src/materialized"
+  end
+
+  def caveats
+    <<~EOS
+      The launchd service will use only one worker thread. For improved
+      performance, consider manually starting materialized and tuning the
+      number of worker threads based on your hardware:
+          materialized --threads=N
+    EOS
+  end
+
+  plist_options manual: "materialized --threads=1"
+
+  def plist
+    <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>ProgramArguments</key>
+        <array>
+          <string>#{opt_bin}/materialized</string>
+          <string>--data-directory=#{var}/materialized</string>
+          <string>--threads=1</string>
+        </array>
+        <key>WorkingDirectory</key>
+        <string>#{var}</string>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>KeepAlive</key>
+        <true/>
+      </dict>
+      </plist>
+    EOS
   end
 
   test do

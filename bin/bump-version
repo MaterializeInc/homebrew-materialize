@@ -11,6 +11,12 @@ fi
 
 cd "$(dirname "$0")/.."
 
+if ! git diff --exit-code || ! git diff --cached --exit-code ; then
+    echo
+    echo "Refusing to run with a dirty work tree, stash or commit your changes"
+    exit 1
+fi
+
 version=${1#v}
 
 echo "Checking Bintray credentials..."
@@ -25,7 +31,7 @@ fi
 
 echo "Fetching metadata for materialized v$version..."
 url=https://github.com/MaterializeInc/materialize/archive/v$version.tar.gz
-archive_sha=$(curl -fsSL "$url" | openssl sha256)
+archive_sha=$(curl -fsSL "$url" | openssl sha256 | sed 's/(stdin)= //')
 build_sha=$(git ls-remote https://github.com/MaterializeInc/materialize.git "v$version^{}" | cut -f1)
 
 echo "URL:                    $url"
@@ -65,7 +71,7 @@ curl --netrc -f \
   "https://api.bintray.com/content/materialize/homebrew/materialized/$version/materialized-$version.high_sierra.bottle.tar.gz;publish=1"
 
 echo "Updating formula for new bottle SHA..."
-bottle_sha=$(openssl sha256 < bottle.tar.gz)
+bottle_sha=$(openssl sha256 < bottle.tar.gz | sed 's/(stdin)= //')
 echo "Bottle SHA-256: $bottle_sha"
 sed -f /dev/stdin Formula/materialized.rb > Formula/materialized.rb.new <<EOF
 /^    sha256.*=> :high_sierra/c\\
