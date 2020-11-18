@@ -34,8 +34,6 @@ jobs:
         brew fetch --build-from-source materialized
         brew fetch --HEAD materialized
         brew install materialized
-        brew audit materialized --online --strict
-        brew style materialized
         brew linkage --test materialized
         brew test materialized --verbose
         set +x
