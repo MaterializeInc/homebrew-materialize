@@ -37,7 +37,7 @@ jobs:
         brew linkage --test materialized
         brew test materialized --verbose
         set +x
-        if ! materialized --version 2>&1 | grep "$sha"; then
+        if ! materialized --version 2>&1 | grep "${sha:0:9}"; then
           echo "materialized --version reports wrong version" >&2
           materialized --version
           exit 1

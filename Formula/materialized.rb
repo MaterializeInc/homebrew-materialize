@@ -1,19 +1,19 @@
 class Materialized < Formula
   desc "Streaming SQL database powered by Timely Dataflow"
   homepage "https://materialize.io/docs/"
-  url "https://github.com/MaterializeInc/materialize/archive/v0.5.3.tar.gz"
-  sha256 "031aaf25b5e7a74a52587ef627928076ea55812e2613c9abdf60238dfc815653"
+  url "https://github.com/MaterializeInc/materialize/archive/v0.6.0.tar.gz"
+  sha256 "8e6072fb346632118094f66ca1cf9e89bd88f64c1828eba5f0db4bb105280625"
   head "https://github.com/MaterializeInc/materialize.git", branch: "main"
 
   bottle do
     root_url "https://packages.materialize.io/homebrew"
-    sha256 "648e922c5a2cfdbfff57b3d25ced22a4b55cde24987380b2343f3f43bec75b08" => :high_sierra
+    sha256 "97c36f5133401002b7f0903075585123554ddc372165865fbed2f4c1073ede7f" => :high_sierra
   end
 
   depends_on "cmake" => :build
   depends_on "rust" => :build
 
-  STABLE_BUILD_SHA = "f56c5a8a373694c5e9bca60e40d9c5ac6346d2b6".freeze
+  STABLE_BUILD_SHA = "235a79b9102e7b63d666ea46e3fdfee036542928".freeze
 
   def build_sha
     if head?
@@ -81,7 +81,7 @@ class Materialized < Formula
     assert_includes output, build_sha
 
     output = shell_output("materialized --version").chomp
-    assert_equal output, "materialized v#{version} (#{build_sha})"
+    assert_equal output, "materialized v#{version} (#{build_sha[0...9]})"
   ensure
     Process.kill(9, pid)
     Process.wait(pid)
