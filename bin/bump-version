@@ -74,8 +74,8 @@ echo "Updating formula for new bottle SHA..."
 bottle_sha=$(openssl sha256 < bottle.tar.gz | sed 's/(stdin)= //')
 echo "Bottle SHA-256: $bottle_sha"
 sed -f /dev/stdin Formula/materialized.rb > Formula/materialized.rb.new <<EOF
-/^    sha256.*=> :high_sierra/c\\
-\    sha256 "$bottle_sha" => :high_sierra
+/^    sha256 high_sierra: .*/c\\
+\    sha256 high_sierra: "$bottle_sha"
 EOF
 mv Formula/materialized.rb{.new,}
 
