@@ -40,11 +40,11 @@ class Materialized < Formula
       The launchd service will use only one worker thread. For improved
       performance, consider manually starting materialized and tuning the
       number of worker threads based on your hardware:
-          materialized --threads=N
+          materialized --workers=N
     EOS
   end
 
-  plist_options manual: "materialized --threads=1"
+  plist_options manual: "materialized --workers=1"
 
   def plist
     <<~EOS
@@ -58,7 +58,7 @@ class Materialized < Formula
         <array>
           <string>#{opt_bin}/materialized</string>
           <string>--data-directory=#{var}/materialized</string>
-          <string>--threads=1</string>
+          <string>--workers=1</string>
         </array>
         <key>WorkingDirectory</key>
         <string>#{var}</string>
