@@ -1,16 +1,9 @@
 ## Contributing
 
 To update the version of Materialize distributed by this tap, you will need
-to be a Materialize employee with a Bintray account.
+to be a Materialize employee with credentials for the `homebrew.materialize.com` S3 bucket.
 
-First, update your `$HOME/.netrc` file with your Bintray credentials:
-
-```
-machine api.bintray.com login <your Bintray username> password <your Bintray API key>
-```
-
-Note that your API key is not the same as your account password. It can be found
-via [these instructions][bintray-api-key].
+Ask a member of the release team to help you set up credentials if necessary.
 
 Then, run the `bump-version` script for the new version:
 

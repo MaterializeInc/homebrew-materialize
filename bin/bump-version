@@ -13,19 +13,16 @@ cd "$(dirname "$0")/.."
 
 if ! git diff --exit-code || ! git diff --cached --exit-code ; then
     echo
-    echo "Refusing to run with a dirty work tree, stash or commit your changes"
+    echo "Refusing to run with a dirty work tree; stash or commit your changes."
     exit 1
 fi
 
 version=${1#v}
 
-echo "Checking Bintray credentials..."
-if ! curl --netrc -fsS https://api.bintray.com/orgs/materialize -o /dev/null; then
-  echo "Unable to perform simple Bintray API request." >&2
-  echo "Have you configured ~/.netrc with a line like the following?" >&2
-  echo >&2
-  echo "    machine api.bintray.com login EMAIL password API_KEY" >&2
-  echo >&2
+echo "Checking S3 credentials..."
+if ! aws s3 cp --quiet s3://homebrew.materialize.com/hello.txt - > /dev/null; then
+  echo "Unable to perform simple S3 API request." >&2
+  echo "Please ask how to set up your AWS credentials in #release on Slack." >&2
   exit 1
 fi
 
@@ -64,11 +61,9 @@ if [[ "$version_status" != 2[0-9][0-9] && "$version_status" != 409 ]]; then
   exit 1
 fi
 
-echo "Uploading bottle to Bintray..."
-curl --netrc -f \
-  -T bottle.tar.gz \
-  -o curl.log \
-  "https://api.bintray.com/content/materialize/homebrew/materialized/$version/materialized-$version.high_sierra.bottle.tar.gz;publish=1"
+echo "Uploading bottle to S3..."
+aws s3 cp bottle.tar.gz \
+  "s3://homebrew.materialize.com/materialized-$version.high_sierra.bottle.tar.gz"
 
 echo "Updating formula for new bottle SHA..."
 bottle_sha=$(openssl sha256 < bottle.tar.gz | sed 's/(stdin)= //')
