@@ -6,7 +6,7 @@ class Materialized < Formula
   head "https://github.com/MaterializeInc/materialize.git", branch: "main"
 
   bottle do
-    root_url "https://packages.materialize.io/homebrew"
+    root_url "https://homebrew.materialize.com"
     sha256 high_sierra: "392ac90edc281b47b0d3f5c45999a1495a0a87343144088520fc03f482363848"
   end
 
