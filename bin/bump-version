@@ -51,8 +51,7 @@ bin/mkbottle "$version"
 
 echo "Uploading bottle to S3..."
 aws s3 cp bottle.tar.gz \
-  --acl public-read \
-  "s3://homebrew.materialize.com/materialized-$version.high_sierra.bottle.tar.gz"
+  "s3://homebrew.materialize.com/materialized-$version.high_sierra.bottle.tar.gz" \
 
 echo "Updating formula for new bottle SHA..."
 bottle_sha=$(openssl sha256 < bottle.tar.gz | sed 's/(stdin)= //')
