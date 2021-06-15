@@ -49,18 +49,6 @@ mv Formula/materialized.rb{.new,}
 echo "Building bottle..."
 bin/mkbottle "$version"
 
-echo "Creating new Bintray version..."
-version_status=$(curl --netrc \
-  -H "Content-Type: application/json" \
-  -d "{\"name\": \"$version\", \"vcs_tag\": \"v$version\"}" \
-  -w "%{http_code}" \
-  -o curl.log \
-  https://api.bintray.com/packages/materialize/homebrew/materialized/versions)
-if [[ "$version_status" != 2[0-9][0-9] && "$version_status" != 409 ]]; then
-  echo "error creating bintray version: $version_status" >&2
-  exit 1
-fi
-
 echo "Uploading bottle to S3..."
 aws s3 cp bottle.tar.gz \
   "s3://homebrew.materialize.com/materialized-$version.high_sierra.bottle.tar.gz"
