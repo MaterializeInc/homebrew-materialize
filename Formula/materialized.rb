@@ -7,7 +7,7 @@ class Materialized < Formula
 
   bottle do
     root_url "http://homebrew.materialize.com"
-    sha256 high_sierra: "392ac90edc281b47b0d3f5c45999a1495a0a87343144088520fc03f482363848"
+    sha256 high_sierra: "e5fa269567e62cbc9e18eeabacd6252623f95753534722741761ead61edd4ccf"
   end
 
   depends_on "cmake" => :build
