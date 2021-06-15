@@ -7,7 +7,7 @@ class Materialized < Formula
 
   bottle do
     root_url "http://homebrew.materialize.com"
-    sha256 high_sierra: "392ac90edc281b47b0d3f5c45999a1495a0a87343144088520fc03f482363848"
+    sha256 high_sierra: "e5fa269567e62cbc9e18eeabacd6252623f95753534722741761ead61edd4ccf"
   end
 
   depends_on "cmake" => :build
@@ -40,11 +40,11 @@ class Materialized < Formula
       The launchd service will use only one worker thread. For improved
       performance, consider manually starting materialized and tuning the
       number of worker threads based on your hardware:
-          materialized --threads=N
+          materialized --workers=N
     EOS
   end
 
-  plist_options manual: "materialized --threads=1"
+  plist_options manual: "materialized --workers=1"
 
   def plist
     <<~EOS
@@ -58,7 +58,7 @@ class Materialized < Formula
         <array>
           <string>#{opt_bin}/materialized</string>
           <string>--data-directory=#{var}/materialized</string>
-          <string>--threads=1</string>
+          <string>--workers=1</string>
         </array>
         <key>WorkingDirectory</key>
         <string>#{var}</string>
