@@ -11,20 +11,10 @@ fi
 
 cd "$(dirname "$0")/.."
 
-if ! git diff --exit-code || ! git diff --cached --exit-code ; then
-    echo
-    echo "Refusing to run with a dirty work tree; stash or commit your changes."
-    exit 1
-fi
+AWS_PROFILE=${AWS_PROFILE:-mz-core-admin}
+export AWS_PROFILE
 
 version=${1#v}
-
-echo "Checking S3 credentials..."
-if ! aws s3 cp --quiet s3://homebrew.materialize.com/hello.txt - > /dev/null; then
-  echo "Unable to perform simple S3 API request." >&2
-  echo "Please ask how to set up your AWS credentials in #release on Slack." >&2
-  exit 1
-fi
 
 echo "Fetching metadata for materialized v$version..."
 url=https://github.com/MaterializeInc/materialize/archive/v$version.tar.gz
@@ -50,9 +40,11 @@ echo "Building bottle..."
 bin/mkbottle "$version"
 
 echo "Uploading bottle to S3..."
-aws s3 cp bottle.tar.gz \
-  "s3://homebrew.materialize.com/materialized-$version.high_sierra.bottle.tar.gz" \
-  --acl public-read
+if ! aws s3 cp bottle.tar.gz "s3://materialize-homebrew/materialized-$version.high_sierra.bottle.tar.gz"; then
+  echo "Uploading to S3 failed." >&2
+  echo "Please ask how to set up your AWS credentials in #release on Slack." >&2
+  exit 1
+fi
 
 echo "Updating formula for new bottle SHA..."
 bottle_sha=$(openssl sha256 < bottle.tar.gz | sed 's/(stdin)= //')
@@ -68,4 +60,4 @@ git checkout -b "v$version"
 git commit -am "v$version"
 
 # Clean up only if everything was successful, to ease debugging failures.
-rm bottle.tar.gz curl.log
+rm bottle.tar.gz
