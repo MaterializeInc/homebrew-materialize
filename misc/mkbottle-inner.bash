@@ -18,7 +18,7 @@ prefix=materialized/$version
 
 mkdir -p "$prefix/.brew"
 (cd "$prefix" \
-  && curl -L https://downloads.mtrlz.dev/materialized-v$version-x86_64-apple-darwin.tar.gz \
+  && curl -L https://binaries.materialize.com/materialized-v$version-x86_64-apple-darwin.tar.gz \
   | tar xz --strip-components=1)
 
 cat > "$prefix/INSTALL_RECEIPT.json" <<EOF
