@@ -15,8 +15,7 @@ Push the resulting branch to GitHub and open a PR. CI will automatically test
 that the formula installs and runs properly.
 
 If the bottle is broken or otherwise fails CI, you will need to manually delete
-the version from Bintray before trying again. The delete button is difficult to
-find, but there are [instructions in the Bintray manual][bintray-delete].
+the version from S3 before trying again.
 
 ## Debugging failures
 
@@ -43,18 +42,10 @@ steps exactly in order.**
 
 2. Build a bottle for the new version by running `bin/mkbottle VERSION`.
 
-3. Create a version in the Homebrew repository on Bintray, and upload the
-   bottle. The bottle's filename must match this pattern exactly, where
-   `VERSION` must *not* have a leading `v`.
-
-   ```
-   materialized-VERSION.high_sierra.bottle.tar.gz
-   ```
+3. Upload the bottle to S3, look for the exact location and file name pattern in the
+   `bin/bump-version` script.
 
 3. Edit [Formula/materialized.rb](Formula/materialized.rb) again.
 
    Using the SHA hash printed at the end of the `bin/mkbottle` command, update
    the `sha256` line within the `bottle` block.
-
-[bintray-api-key]: https://www.jfrog.com/confluence/display/BT/Uploading#Uploading-GettingyourAPIKey
-[bintray-delete]: https://www.jfrog.com/confluence/display/BT/Managing+Uploaded+Content#ManagingUploadedContent-DeletingContent
