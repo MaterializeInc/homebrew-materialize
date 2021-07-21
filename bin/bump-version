@@ -41,8 +41,10 @@ bin/mkbottle "$version"
 
 echo "Uploading bottle to S3..."
 if ! aws s3 cp bottle.tar.gz "s3://materialize-homebrew/materialized-$version.high_sierra.bottle.tar.gz"; then
+  echo
   echo "Uploading to S3 failed." >&2
-  echo "Please ask how to set up your AWS credentials in #release on Slack." >&2
+  echo "AWS CLI access is documented here: https://github.com/MaterializeInc/i2/blob/main/doc/aws-access.md" >&2
+  echo "Ask for any clarification in #release on Slack." >&2
   exit 1
 fi
 
@@ -55,9 +57,14 @@ sed -f /dev/stdin Formula/materialized.rb > Formula/materialized.rb.new <<EOF
 EOF
 mv Formula/materialized.rb{.new,}
 
+echo
 echo "Committing changes on new branch..."
+echo
 git checkout -b "v$version"
 git commit -am "v$version"
 
 # Clean up only if everything was successful, to ease debugging failures.
 rm bottle.tar.gz
+
+echo
+echo "Changes complete! Create a PR with the current branch: v$version"
