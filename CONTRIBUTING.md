@@ -14,10 +14,6 @@ $ bin/bump-version VERSION
 Push the resulting branch to GitHub and open a PR. CI will automatically test
 that the formula installs and runs properly.
 
-If the bottle is broken or otherwise fails CI, you will need to manually delete
-the version from Bintray before trying again. The delete button is difficult to
-find, but there are [instructions in the Bintray manual][bintray-delete].
-
 ## Debugging failures
 
 If `bump-version` fails, for some reason, these are the steps that it runs
@@ -56,5 +52,3 @@ steps exactly in order.**
    Using the SHA hash printed at the end of the `bin/mkbottle` command, update
    the `sha256` line within the `bottle` block.
 
-[bintray-api-key]: https://www.jfrog.com/confluence/display/BT/Uploading#Uploading-GettingyourAPIKey
-[bintray-delete]: https://www.jfrog.com/confluence/display/BT/Managing+Uploaded+Content#ManagingUploadedContent-DeletingContent
