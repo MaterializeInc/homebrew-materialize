@@ -40,7 +40,7 @@ echo "Building bottle..."
 bin/mkbottle "$version"
 
 echo "Uploading bottle to S3..."
-if ! aws s3 cp bottle.tar.gz "s3://materialize-homebrew/materialized-$version.high_sierra.bottle.tar.gz"; then
+if ! aws s3 cp bottle.tar.gz "s3://materialize-homebrew/materialized-$version.mojave.bottle.tar.gz"; then
   echo
   echo "Uploading to S3 failed." >&2
   echo "AWS CLI access is documented here: https://github.com/MaterializeInc/i2/blob/main/doc/aws-access.md" >&2
@@ -52,8 +52,8 @@ echo "Updating formula for new bottle SHA..."
 bottle_sha=$(openssl sha256 < bottle.tar.gz | sed 's/(stdin)= //')
 echo "Bottle SHA-256: $bottle_sha"
 sed -f /dev/stdin Formula/materialized.rb > Formula/materialized.rb.new <<EOF
-/^    sha256 high_sierra: .*/c\\
-\    sha256 high_sierra: "$bottle_sha"
+/^    sha256 mojave: .*/c\\
+\    sha256 mojave: "$bottle_sha"
 EOF
 mv Formula/materialized.rb{.new,}
 
