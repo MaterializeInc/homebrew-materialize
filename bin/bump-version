@@ -45,6 +45,8 @@ if ! aws s3 cp bottle.tar.gz "s3://materialize-homebrew/materialized-$version.mo
   echo "Uploading to S3 failed." >&2
   echo "AWS CLI access is documented here: https://github.com/MaterializeInc/i2/blob/main/doc/aws-access.md" >&2
   echo "Ask for any clarification in #release on Slack." >&2
+  echo "Note:"
+  echo "    You need to be logged in to the mz-core-admin account"
   exit 1
 fi
 
