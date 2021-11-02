@@ -22,7 +22,7 @@ jobs:
         cp -a "$GITHUB_WORKSPACE" "$(brew --repo ${{github.repository}})"
         brew install docker docker-machine
         brew services start docker-machine
-        docker-machine create --driver virtualbox --virtualbox-boot2docker-url=https://github.com/boot2docker/boot2docker/releases/download/v19.03.5/boot2docker.iso default
+        docker-machine create --driver virtualbox --virtualbox-boot2docker-url=https://github.com/boot2docker/boot2docker/releases/download/v19.03.12/boot2docker.iso default
         eval $(docker-machine env default)
         metadata=$(brew info --json materialized)
         version=$(jq -r .[0].versions.stable <<< "$metadata")
