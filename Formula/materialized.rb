@@ -1,19 +1,19 @@
 class Materialized < Formula
   desc "Streaming SQL database powered by Timely Dataflow"
   homepage "https://materialize.io/docs/"
-  url "https://github.com/MaterializeInc/materialize/archive/v0.9.12.tar.gz"
-  sha256 "1816e2eedb7e3be20f29b72dc10e9ae6a847c73f80cf2a15c25924a7d79edcf0"
+  url "https://github.com/MaterializeInc/materialize/archive/v0.9.13.tar.gz"
+  sha256 "f22d4ada3a6da8a16af5afe331fce57df0fbe89c92ed7e290665df6eb5a06276"
   head "https://github.com/MaterializeInc/materialize.git", branch: "main"
 
   bottle do
     root_url "http://homebrew.materialize.com"
-    sha256 mojave: "d80b7dcb8b402bba68fcc0f485b0bc66d061b3be31ce29e4dc40d1cf2a334d45"
+    sha256 mojave: "0959872f8c3d24cf0183b9c3dc734826f2c9f85af8f5a29937ade16baab0f965"
   end
 
   depends_on "cmake" => :build
   depends_on "rust" => :build
 
-  STABLE_BUILD_SHA = "aea12ff0ad5350140cb91bf571c536ae0dfd6ee6".freeze
+  STABLE_BUILD_SHA = "193001f3150019d94298ccc5f3c49a4c5e3ffc29".freeze
 
   def build_sha
     if head?
