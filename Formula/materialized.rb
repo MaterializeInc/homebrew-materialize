@@ -7,6 +7,7 @@ class Materialized < Formula
 
   bottle do
     root_url "http://homebrew.materialize.com"
+    sha256 arm_big_sur: "tobedetermined"
     sha256 mojave: "8408d5ee24c54740b84feb9619a601eb89a68b6fbb3879f3ac5cb00f13ad7fa0"
   end
 
