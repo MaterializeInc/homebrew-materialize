@@ -14,11 +14,18 @@
 set -euo pipefail
 
 version=$1
+platform=$2
 prefix=materialized/$version
+
+if [[ "$platform" = *arm64* ]]; then
+  arch=aarch64
+else
+  arch=x86_64
+fi
 
 mkdir -p "$prefix/.brew"
 (cd "$prefix" \
-  && curl -L https://binaries.materialize.com/materialized-v$version-x86_64-apple-darwin.tar.gz \
+  && curl -L https://binaries.materialize.com/materialized-v$version-$arch-apple-darwin.tar.gz \
   | tar xz --strip-components=1)
 
 cat > "$prefix/INSTALL_RECEIPT.json" <<EOF
@@ -55,7 +62,7 @@ cat > "$prefix/INSTALL_RECEIPT.json" <<EOF
 EOF
 
 # Remove the self-referential bottle block using the same technique as
-# Hombrew.
+# Homebrew.
 # See: https://github.com/Homebrew/brew/blob/d0f40eda1/Library/Homebrew/formula_installer.rb#L332
 sed "/^  bottle do/,/^  end/d" /materialized.rb > "$prefix/.brew/materialized.rb"
 tar \
