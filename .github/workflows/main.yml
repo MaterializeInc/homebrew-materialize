@@ -23,10 +23,9 @@ jobs:
         cp -a "$GITHUB_WORKSPACE" "$(brew --repo ${{github.repository}})"
         metadata=$(brew info --json materialized)
         version=$(jq -r .[0].versions.stable <<< "$metadata")
-        bottle_hash=$(jq -r .[0].bottle.stable.files.mojave.sha256 <<< "$metadata")
         sha=$(git ls-remote https://github.com/MaterializeInc/materialize.git "v$version^{}" | cut -f1)
         echo "MATERIALIZED_VERSION=$version" >> "$GITHUB_ENV"
-        echo "version=$version" "sha=$sha" "bottle_hash=$bottle_hash"
+        echo "version=$version" "sha=$sha"
         set -x
         brew fetch --build-from-source materialized
         brew fetch --HEAD materialized
@@ -39,10 +38,14 @@ jobs:
           materialized --version
           exit 1
         fi
-        bin/mkbottle "$version"
-        echo "$bottle_hash  bottle.tar.gz" | shasum -a 256 --check
+        for platform in mojave arm64_big_sur; do
+          bottle_hash=$(jq -r .[0].bottle.stable.files."$platform".sha256 <<< "$metadata")
+          echo "bottle_hash=$bottle_hash"
+          bin/mkbottle "$version" "$platform"
+          echo "$bottle_hash  bottle.$platform.tar.gz" | shasum -a 256 --check
+        done
     - uses: actions/upload-artifact@v1
       if: failure()
       with:
-        name: materialized.mojave.bottle.tar.gz
-        path: materialized-${{env.MATERIALIZED_VERSION}}.mojave.bottle.tar.gz
+        name: bottle
+        path: materialized-${{env.MATERIALIZED_VERSION}}.*.bottle.tar.gz
