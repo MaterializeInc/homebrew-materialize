@@ -4,10 +4,9 @@ on: [pull_request]
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-10.15
     steps:
     - uses: actions/checkout@v2
-    - uses: docker-practice/actions-setup-docker@1.0.8
     - name: Test materialized formula
       # Ideally we would test a) building from source for the current
       # version, b) building from source for HEAD, and c) pouring the pre-built
@@ -21,6 +20,10 @@ jobs:
         set -euo pipefail
         mkdir -p "$(dirname $(brew --repo ${{github.repository}}))"
         cp -a "$GITHUB_WORKSPACE" "$(brew --repo ${{github.repository}})"
+        brew install docker docker-machine
+        brew services start docker-machine
+        docker-machine create --driver virtualbox --virtualbox-hostonly-cidr 192.168.63.1/24 default
+        eval $(docker-machine env default)
         metadata=$(brew info --json materialized)
         version=$(jq -r .[0].versions.stable <<< "$metadata")
         sha=$(git ls-remote https://github.com/MaterializeInc/materialize.git "v$version^{}" | cut -f1)
