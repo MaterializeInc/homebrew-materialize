@@ -7,7 +7,7 @@ jobs:
     runs-on: macos-10.15
     steps:
     - uses: actions/checkout@v2
-    - name: Test materialized formula
+    - name: Test formulas
       # Ideally we would test a) building from source for the current
       # version, b) building from source for HEAD, and c) pouring the pre-built
       # bottle. Unfortunately building from source on GitHub VMs takes 30m+,
@@ -24,31 +24,33 @@ jobs:
         brew services start docker-machine
         docker-machine create --driver virtualbox --virtualbox-hostonly-cidr 192.168.63.1/24 default
         eval $(docker-machine env default)
-        metadata=$(brew info --json materialized)
-        version=$(jq -r .[0].versions.stable <<< "$metadata")
-        sha=$(git ls-remote https://github.com/MaterializeInc/materialize.git "v$version^{}" | cut -f1)
-        echo "MATERIALIZED_VERSION=$version" >> "$GITHUB_ENV"
-        echo "version=$version" "sha=$sha"
-        set -x
-        brew fetch --build-from-source materialized
-        brew fetch --HEAD materialized
-        brew install materialized
-        brew linkage --test materialized
-        brew test materialized --verbose
-        set +x
-        if ! materialized --version 2>&1 | grep "${sha:0:9}"; then
-          echo "materialized --version reports wrong version" >&2
-          materialized --version
-          exit 1
-        fi
-        for platform in mojave arm64_big_sur; do
-          bottle_hash=$(jq -r .[0].bottle.stable.files."$platform".sha256 <<< "$metadata")
-          echo "bottle_hash=$bottle_hash"
-          bin/mkbottle "$version" "$platform"
-          echo "$bottle_hash  bottle.$platform.tar.gz" | shasum -a 256 --check
+        for formula in materialized; do
+          metadata=$(brew info --json $formula)
+          version=$(jq -r .[0].versions.stable <<< "$metadata")
+          sha=$(git ls-remote https://github.com/MaterializeInc/materialize.git "v$version^{}" | cut -f1)
+          echo "FORMULA_VERSION=$version" >> "$GITHUB_ENV"
+          echo "version=$version" "sha=$sha"
+          set -x
+          brew fetch --build-from-source $formula
+          brew fetch --HEAD $formula
+          brew install $formula
+          brew linkage --test $formula
+          brew test $formula --verbose
+          set +x
+          if ! $formula --version 2>&1 | grep "${sha:0:9}"; then
+            echo "$formula --version reports wrong version" >&2
+            $formula --version
+            exit 1
+          fi
+          for platform in mojave arm64_big_sur; do
+            bottle_hash=$(jq -r .[0].bottle.stable.files."$platform".sha256 <<< "$metadata")
+            echo "bottle_hash=$bottle_hash"
+            bin/mkbottle "$version" "$platform" "$formula"
+            echo "$bottle_hash  bottle.$platform.tar.gz" | shasum -a 256 --check
+          done
         done
     - uses: actions/upload-artifact@v1
       if: failure()
       with:
         name: bottle
-        path: materialized-${{env.MATERIALIZED_VERSION}}.*.bottle.tar.gz
+        path: $formula-${{env.FORMULA_VERSION}}.*.bottle.tar.gz
