@@ -6,14 +6,15 @@ class Mz < Formula
     sha256 "5cc8bcbe2643fc48a08f853e13efe005c3f9f357b66c51ac428be6271d896500"
     head "https://github.com/MaterializeInc/materialize.git", branch: "main"
 
+    bottle do
+        root_url "http://homebrew.materialize.com"
+        sha256 arm64_big_sur: "TBD"
+        sha256 mojave: "TBD"
+    end
+
     depends_on "cmake" => :build
     depends_on "rust" => :build
-
-    if OS.mac?
-        depends_on "libpq" => :build
-    elsif OS.linux?
-        depends_on "postgresql-client" => :build
-    end
+    depends_on "libpq" => :build
 
     def install
         system "cargo", "install", "--locked",
