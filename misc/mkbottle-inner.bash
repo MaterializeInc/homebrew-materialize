@@ -4,9 +4,9 @@
 # Docker container with the correct version of `tar` and `gzip` available
 # (i.e., by bin/mkbottle). The interface is as follows:
 #
-#   * The materialized formula must exist at /materialized.rb.
+#   * The formula must exist at /Formula.
 #
-#   * The version of materialized to download must be provided as the first
+#   * The version of Materialize to download must be provided as the first
 #     argument to the script, without the leading `v`.
 #
 #   * The bottle will be written to /bottle.tar.gz.
@@ -15,7 +15,8 @@ set -euo pipefail
 
 version=$1
 platform=$2
-prefix=materialized/$version
+formula=$3
+prefix=$formula/$version
 
 if [[ "$platform" = *arm64* ]]; then
   arch=aarch64
@@ -25,7 +26,7 @@ fi
 
 mkdir -p "$prefix/.brew"
 (cd "$prefix" \
-  && curl -L https://binaries.materialize.com/materialized-v$version-$arch-apple-darwin.tar.gz \
+  && curl -L https://binaries.materialize.com/$formula-v$version-$arch-apple-darwin.tar.gz \
   | tar xz --strip-components=1)
 
 cat > "$prefix/INSTALL_RECEIPT.json" <<EOF
@@ -48,7 +49,7 @@ cat > "$prefix/INSTALL_RECEIPT.json" <<EOF
   "aliases": [],
   "runtime_dependencies": [],
   "source": {
-    "path": "@@HOMEBREW_REPOSITORY@@/Library/Taps/MaterializeInc/homebrew-materialize/Formula/materialized.rb",
+    "path": "@@HOMEBREW_REPOSITORY@@/Library/Taps/MaterializeInc/homebrew-materialize/Formula/$formula.rb",
     "tap": "materializeinc/materialize",
     "spec": "stable",
     "versions": {
@@ -64,11 +65,11 @@ EOF
 # Remove the self-referential bottle block using the same technique as
 # Homebrew.
 # See: https://github.com/Homebrew/brew/blob/d0f40eda1/Library/Homebrew/formula_installer.rb#L332
-sed "/^  bottle do/,/^  end/d" /materialized.rb > "$prefix/.brew/materialized.rb"
+sed "/^  bottle do/,/^  end/d" /$formula.rb > "$prefix/.brew/$formula.rb"
 tar \
   --sort=name \
-  --mtime="./$prefix/bin/materialized" \
+  --mtime="./$prefix/bin/$formula" \
   --owner=0 --group=0 --numeric-owner \
   --pax-option=exthdr.name=%d/PaxHeaders/%f,delete=atime,delete=ctime \
-  -c materialized \
+  -c $formula \
   | gzip -n > bottle.tar.gz

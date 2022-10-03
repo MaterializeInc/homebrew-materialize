@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-# Automatically updates the tap for a newly-released version of materialized.
+# Automatically updates the tap for a newly-released version.
 
 set -euo pipefail
 
-if [[ $# -ne 1 ]]; then
-  echo "usage: $0 VERSION" >&2
+if [[ $# -ne 2 ]]; then
+  echo "usage: $0 VERSION FORMULA" >&2
   exit 1
 fi
 
@@ -15,8 +15,9 @@ AWS_PROFILE=${AWS_PROFILE:-mz-core-admin}
 export AWS_PROFILE
 
 version=${1#v}
+formula=$2
 
-echo "Fetching metadata for materialized v$version..."
+echo "Fetching metadata for $formula v$version..."
 url=https://github.com/MaterializeInc/materialize/archive/v$version.tar.gz
 archive_sha=$(curl -fsSL "$url" | openssl sha256 | sed -e 's/(stdin)= //' -e 's/^SHA256//')
 build_sha=$(git ls-remote https://github.com/MaterializeInc/materialize.git "v$version^{}" | cut -f1)
@@ -26,7 +27,7 @@ echo "Source archive SHA-256: $archive_sha"
 echo "Build commit SHA-1:     $build_sha"
 
 echo "Updating formula for new source tarball..."
-sed -f /dev/stdin Formula/materialized.rb > Formula/materialized.rb.new <<EOF
+sed -f /dev/stdin Formula/$formula.rb > Formula/$formula.rb.new <<EOF
 /^  url/c\\
 \  url "$url"
 /^  sha256/c\\
@@ -34,38 +35,38 @@ sed -f /dev/stdin Formula/materialized.rb > Formula/materialized.rb.new <<EOF
 /^  STABLE_BUILD_SHA/c\\
 \  STABLE_BUILD_SHA = "$build_sha".freeze
 EOF
-mv Formula/materialized.rb{.new,}
+mv Formula/$formula.rb{.new,}
 
 for platform in mojave arm64_big_sur; do
   echo "Building bottle..."
-  bin/mkbottle "$version" "$platform"
+  bin/mkbottle "$version" "$platform" "$formula"
 
-  echo "Uploading bottle to S3..."
-  if ! aws s3 cp bottle.$platform.tar.gz "s3://materialize-homebrew/materialized-$version.$platform.bottle.tar.gz"; then
-    echo
-    echo "Uploading to S3 failed." >&2
-    echo "AWS CLI access is documented here: https://github.com/MaterializeInc/i2/blob/main/doc/aws-access.md" >&2
-    echo "Ask for any clarification in #release on Slack." >&2
-    echo "Note:"
-    echo "    You need to be logged in to the mz-core-admin account"
-    exit 1
-  fi
+  # echo "Uploading bottle to S3..."
+  # if ! aws s3 cp bottle.$platform.tar.gz "s3://materialize-homebrew/$formula-$version.$platform.bottle.tar.gz"; then
+  #   echo
+  #   echo "Uploading to S3 failed." >&2
+  #   echo "AWS CLI access is documented here: https://github.com/MaterializeInc/i2/blob/main/doc/aws-access.md" >&2
+  #   echo "Ask for any clarification in #release on Slack." >&2
+  #   echo "Note:"
+  #   echo "    You need to be logged in to the mz-core-admin account"
+  #   exit 1
+  # fi
 
   echo "Updating formula for new bottle SHA..."
   bottle_sha=$(openssl sha256 < bottle.$platform.tar.gz | sed -e 's/(stdin)= //' -e 's/^SHA256//')
   echo "Bottle SHA-256: $bottle_sha"
-  sed -f /dev/stdin Formula/materialized.rb > Formula/materialized.rb.new <<EOF
+  sed -f /dev/stdin Formula/$formula.rb > Formula/$formula.rb.new <<EOF
 /^    sha256 $platform: .*/c\\
 \    sha256 $platform: "$bottle_sha"
 EOF
-  mv Formula/materialized.rb{.new,}
+  mv Formula/$formula.rb{.new,}
 done
 
-echo
-echo "Committing changes on new branch..."
-echo
-git checkout -b "v$version"
-git commit -am "v$version"
+# echo
+# echo "Committing changes on new branch..."
+# echo
+# git checkout -b "v$version"
+# git commit -am "v$version"
 
 # Clean up only if everything was successful, to ease debugging failures.
 rm bottle.*.tar.gz
