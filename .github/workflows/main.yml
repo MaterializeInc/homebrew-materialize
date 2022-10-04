@@ -22,8 +22,9 @@ jobs:
         cp -a "$GITHUB_WORKSPACE" "$(brew --repo ${{github.repository}})"
         brew install docker docker-machine
         brew services start docker-machine
+        mkdir -p ~/.docker/machine/cache/
         curl -Lo ~/.docker/machine/cache/boot2docker.iso https://github.com/boot2docker/boot2docker/releases/download/v19.03.12/boot2docker.iso
-        docker-machine create --driver virtualbox --virtualbox-hostonly-cidr 192.168.63.1/24 default
+        docker-machine create --driver virtualbox --virtualbox-boot2docker-url ~/.docker/machine/cache/boot2docker.iso --virtualbox-hostonly-cidr 192.168.63.1/24 default
         eval $(docker-machine env default)
         for formula in materialized; do
           metadata=$(brew info --json $formula)
