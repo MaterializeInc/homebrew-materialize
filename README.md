@@ -1,18 +1,14 @@
 # homebrew-materialize
 
-A [Homebrew] tap for installing [Materialize], the streaming data warehouse.
+A [Homebrew] tap for installing tools for using [Materialize], the
+streaming data warehouse.
 
-This tap always installs the latest stable release of `materialized`. For older
-versions and installation options besides Homebrew, see
-<https://materialize.com/docs/install>.
+## Deprecation notice
 
-### Installation instructions
-
-With [Homebrew] installed, run:
-
-```shell
-brew install MaterializeInc/materialize/materialized
-```
+The `materialized` formula has been disabled, as we no longer support running
+Materialize locally.
+[**Get early access to our new cloud-native experience.**][ea]
 
 [Materialize]: https://materialize.com
 [Homebrew]: https://brew.sh
+[ea]: https://materialize.com/register/
