@@ -12,6 +12,6 @@ To update the version of `mz` distributed by this tap, you will need to:
     curl "https://binaries.materialize.com/mz-$VERSION-x86_64-apple-darwin.tar.gz" | sha256sum
     ```
 
-3. Update the checksums and version in mz.rb.
+3. Update the checksums in mz.rb.
 
 4. Open a PR with your changes.
