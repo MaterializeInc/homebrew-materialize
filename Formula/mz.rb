@@ -9,7 +9,7 @@ class Mz < Formula
 
   if Hardware::CPU.arm?
     url "https://binaries.materialize.com/mz-v#{VERSION}-aarch64-apple-darwin.tar.gz"
-    sha256 "e77739a5dbfc5a8e85e836bde8a90e7dd60ccef0d8cabb71a2c9c41409280a9b"
+    sha256 "670c1827f9eca5349487af84247040e84c5148ebebcab0d40da3bb932f7b2899"
 
     def install
       bin.install "bin/mz"
