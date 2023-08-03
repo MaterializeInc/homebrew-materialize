@@ -2,9 +2,9 @@
 
 To update the version of `mz` distributed by this tap, you will need to:
 
-  * Update the `VERSION` constant in mz.rb.
+1. Update the `VERSION` constant in mz.rb.
 
-  * Run the following commands to calculate the checksum of the tarballs:
+2. Run the following commands to calculate the checksum of the tarballs:
 
     ```
     VERSION=vX.Y.Z
@@ -12,6 +12,6 @@ To update the version of `mz` distributed by this tap, you will need to:
     curl "https://binaries.materialize.com/mz-$VERSION-x86_64-apple-darwin.tar.gz" | sha256sum
     ```
 
-  * Update the checksums in mz.rb.
+3. Update the checksums and version in mz.rb.
 
-  * Open a PR with your changes.
+4. Open a PR with your changes.

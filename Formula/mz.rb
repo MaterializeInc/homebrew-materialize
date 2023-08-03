@@ -5,11 +5,11 @@ class Mz < Formula
 
   depends_on "postgresql@14"
 
-  VERSION = "0.1.0"
+  VERSION = "0.1.2"
 
   if Hardware::CPU.arm?
     url "https://binaries.materialize.com/mz-v#{VERSION}-aarch64-apple-darwin.tar.gz"
-    sha256 "945f63b3514279f334fca35d1ea078d71354d2ae57da42fe57af86c6d0866167"
+    sha256 "e77739a5dbfc5a8e85e836bde8a90e7dd60ccef0d8cabb71a2c9c41409280a9b"
 
     def install
       bin.install "bin/mz"
@@ -17,7 +17,7 @@ class Mz < Formula
   end
   if Hardware::CPU.intel?
     url "https://binaries.materialize.com/mz-v#{VERSION}-x86_64-apple-darwin.tar.gz"
-    sha256 "06be949147015551657092d0da9a95fafeee6a3e4e87fd1a7fecc124c0646133"
+    sha256 "6c3880c7c7bca8d51b8e434614fa1f1a627d2853645ddb67b4f2b1c0600fb46d"
 
     def install
       bin.install "bin/mz"
