@@ -9,7 +9,7 @@ class Mz < Formula
 
   if Hardware::CPU.arm?
     url "https://binaries.materialize.com/mz-v#{VERSION}-aarch64-apple-darwin.tar.gz"
-    sha256 "907bd4362e86fbbeb0640e96bf5fa008427ba06e0fffc61b788a628c4f49c0fd"
+    sha256 "dd7fcb0eaae1305459dd143f1c0381576e2216d6aa1cae1b5190825bc5b1c591"
 
     def install
       bin.install "bin/mz"
@@ -17,7 +17,7 @@ class Mz < Formula
   end
   if Hardware::CPU.intel?
     url "https://binaries.materialize.com/mz-v#{VERSION}-x86_64-apple-darwin.tar.gz"
-    sha256 "fb527e49ebb15e2c87d61ab4d00fcf290c625c082290e85a38ef3ee98aaa27ef"
+    sha256 "9ad3d8f289382d1acf223b44d446b82481ec027d918fc74e318884222047e4b8"
 
     def install
       bin.install "bin/mz"
