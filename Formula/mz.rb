@@ -3,7 +3,7 @@ class Mz < Formula
   homepage "https://materialize.com"
   license "Apache 2.0"
 
-  depends_on "postgresql@14"
+  depends_on "postgresql@14" 
 
   VERSION = "0.2.2"
 
