@@ -23,7 +23,7 @@ class MzDeploy < Formula
   end
 
   def install
-    bin.install "mz/bin/mz-deploy" => "mz-deploy"
+    bin.install "bin/mz-deploy" => "mz-deploy"
     generate_completions_from_executable(bin/"mz-deploy", "completions", shells: [:bash, :zsh, :fish])
   end
 
