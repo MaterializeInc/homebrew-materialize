@@ -1,24 +1,24 @@
 class MzDeploy < Formula
   desc "Declarative SQL project tooling for Materialize"
   homepage "https://materialize.com"
-  version "0.6.0"
+  version "0.7.0"
   license "BUSL-1.1"
 
   on_macos do
     on_arm do
       url "https://binaries.materialize.com/mz-deploy-v#{version}-aarch64-apple-darwin.tar.gz"
-      sha256 "084995c7d49dc31b9ae42469002a7a480d8c6bf9b1033f91016a6e5e81f9c4eb"
+      sha256 "b682a898710b8ab3697156e5bf3834d8d0c1581af5aec9ee6c57f9f599272e7e"
     end
   end
 
   on_linux do
     on_intel do
       url "https://binaries.materialize.com/mz-deploy-v#{version}-x86_64-unknown-linux-gnu.tar.gz"
-      sha256 "56c250704e1a527e239d1c17dd3a1a61f3752a26a78f41612956b5bcb433ef35"
+      sha256 "7c4e03a73fe8f464efeaf115002788c3d3c5bc105d02942644e78da04cdcc40c"
     end
     on_arm do
       url "https://binaries.materialize.com/mz-deploy-v#{version}-aarch64-unknown-linux-gnu.tar.gz"
-      sha256 "350bd1d1de00a91bd128b92803ae0f53fde4dd4b1b3d5fa8ddc465310dd3c820"
+      sha256 "5657a0f5bdf47cc90720a4330b1e101297bb76d7d7118c5d9c4924fb97653003"
     end
   end
 
