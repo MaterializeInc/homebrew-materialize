@@ -1,0 +1,48 @@
+name: Bump mz-deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "mz-deploy version to bump to, e.g. 0.7.0"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Bump the formula
+        env:
+          VERSION: ${{ inputs.version }}
+        run: bin/update-mz-deploy "$VERSION"
+
+      - name: Commit and push to master
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          version="${VERSION#v}"
+          if git diff --quiet -- Formula/mz-deploy.rb; then
+            echo "Formula/mz-deploy.rb is already at $version — nothing to commit." \
+              | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/mz-deploy.rb
+          git commit -m "bump mz-deploy to $version"
+          git push origin HEAD:master
+          {
+            echo "Bumped \`mz-deploy\` to \`$version\` and pushed to \`master\`."
+            echo
+            echo '```diff'
+            git show --format= --no-color HEAD -- Formula/mz-deploy.rb
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
