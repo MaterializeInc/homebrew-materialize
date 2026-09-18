@@ -28,6 +28,10 @@ in the Actions tab — run it with the new version and it commits the bump strai
 gh workflow run bump-mz-deploy.yml -f version=X.Y.Z
 ```
 
+That workflow depends on one-time admin setup (a GitHub App that can bypass
+`master`'s protection); see [.github/AUTOMATION_SETUP.md](.github/AUTOMATION_SETUP.md).
+Until that is done, use the local script below.
+
 To do it locally instead, from the repo root:
 
 ```

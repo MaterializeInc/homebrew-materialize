@@ -1,24 +1,44 @@
 name: Bump mz-deploy
 
+# Manual only: run from the Actions tab (or `gh workflow run bump-mz-deploy.yml
+# -f version=X.Y.Z`). Bumps Formula/mz-deploy.rb and pushes straight to master.
+#
+# master requires a pull request, and the built-in GITHUB_TOKEN cannot push to a
+# protected branch even when its actor is on the bypass list. So this workflow
+# mints a token for a GitHub App that is a bypass actor on master's ruleset.
+# See .github/AUTOMATION_SETUP.md for the one-time admin setup this depends on.
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "mz-deploy version to bump to, e.g. 0.7.0"
+        description: "mz-deploy version to bump to, e.g. 0.8.0"
         required: true
         type: string
 
+# The App token does the writing; GITHUB_TOKEN needs nothing.
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   bump:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Mint a GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.BUMP_APP_CLIENT_ID }}
+          private-key: ${{ secrets.BUMP_APP_PRIVATE_KEY }}
+
+      - uses: actions/checkout@v7
         with:
           ref: master
+          token: ${{ steps.app-token.outputs.token }}
+          # Keep the App credentials in .git/config so the push below is authenticated.
+          persist-credentials: true
 
+      # The input is passed through the environment rather than interpolated
+      # into the script, so it is never treated as shell syntax.
       - name: Bump the formula
         env:
           VERSION: ${{ inputs.version }}
@@ -27,6 +47,8 @@ jobs:
       - name: Commit and push to master
         env:
           VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
         run: |
           version="${VERSION#v}"
           if git diff --quiet -- Formula/mz-deploy.rb; then
@@ -34,8 +56,12 @@ jobs:
               | tee -a "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Attribute the commit to the App's bot account.
+          bot_id="$(gh api "/users/${APP_SLUG}[bot]" --jq .id)"
+          git config user.name "${APP_SLUG}[bot]"
+          git config user.email "${bot_id}+${APP_SLUG}[bot]@users.noreply.github.com"
+
           git add Formula/mz-deploy.rb
           git commit -m "bump mz-deploy to $version"
           git push origin HEAD:master
