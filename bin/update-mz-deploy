@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+#
+# Bump Formula/mz-deploy.rb to a new release.
+#
+# Reads the `url` lines from the formula, substitutes the requested version into
+# each one, downloads every platform tarball, recomputes its sha256, and rewrites
+# the `version` line plus all `sha256` lines in place.
+#
+# Pairing is positional: in the formula each `url "..."` line is immediately
+# followed by its `sha256 "..."` line, so the Nth url's checksum becomes the Nth
+# sha256. The platform list is never hardcoded — it adapts if platforms are added
+# to or removed from the formula.
+#
+# Usage: bin/update-mz-deploy <version> [formula_path]
+#   <version>      e.g. 0.7.0  (a leading "v" is stripped, so v0.7.0 also works)
+#   [formula_path] defaults to Formula/mz-deploy.rb next to this script
+
+set -euo pipefail
+
+usage() {
+  echo "usage: $(basename "$0") <version> [formula_path]" >&2
+  echo "  e.g. $(basename "$0") 0.7.0" >&2
+}
+
+if [[ $# -lt 1 || $# -gt 2 ]]; then
+  usage
+  exit 1
+fi
+
+version="${1#v}"
+if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "error: version '$version' doesn't look like X.Y.Z" >&2
+  usage
+  exit 1
+fi
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+formula="${2:-$repo_root/Formula/mz-deploy.rb}"
+
+if [[ ! -f "$formula" ]]; then
+  echo "error: no such formula: $formula" >&2
+  exit 1
+fi
+
+# Derive the platform list from the formula itself.
+url_templates=()
+while IFS= read -r line; do
+  url_templates+=("$line")
+done < <(sed -n 's/.*url "\([^"]*\)".*/\1/p' "$formula")
+
+sha_count="$(grep -c 'sha256 "[^"]*"' "$formula" || true)"
+
+if [[ ${#url_templates[@]} -eq 0 ]]; then
+  echo "error: no \`url\` lines found in $formula" >&2
+  exit 1
+fi
+if [[ ${#url_templates[@]} -ne $sha_count ]]; then
+  echo "error: $formula has ${#url_templates[@]} url lines but $sha_count sha256 lines" >&2
+  echo "       they must pair 1:1; aborting" >&2
+  exit 1
+fi
+
+# Pick a sha256 tool: coreutils on Linux, shasum on macOS.
+if command -v sha256sum >/dev/null 2>&1; then
+  sha256_of() { sha256sum "$1" | awk '{print $1}'; }
+elif command -v shasum >/dev/null 2>&1; then
+  sha256_of() { shasum -a 256 "$1" | awk '{print $1}'; }
+else
+  echo "error: neither sha256sum nor shasum found" >&2
+  exit 1
+fi
+
+workdir="$(mktemp -d)"
+trap 'rm -rf "$workdir"' EXIT
+
+checksums="$workdir/checksums"
+: > "$checksums"
+
+# Download everything first; the formula is only touched once all of this succeeds,
+# so a failed or partial run never leaves a bad checksum behind.
+for template in "${url_templates[@]}"; do
+  url="${template//'#{version}'/$version}"
+  echo "→ $url" >&2
+
+  artifact="$workdir/artifact.tar.gz"
+  if ! curl -fsSL --retry 3 -o "$artifact" "$url"; then
+    echo "error: failed to download $url; aborting without touching the formula" >&2
+    exit 1
+  fi
+
+  # Guard against silently checksumming a 404 / error page: real artifacts are
+  # gzip tarballs. A wrong sha256 silently breaks every install.
+  if ! gzip -t "$artifact" 2>/dev/null; then
+    echo "error: $url is not a valid gzip tarball (likely a 404 or error page);" >&2
+    echo "       aborting without touching the formula" >&2
+    exit 1
+  fi
+
+  digest="$(sha256_of "$artifact")"
+  echo "  sha256 $digest" >&2
+  echo "$digest" >> "$checksums"
+done
+
+# Rewrite into a temp file and move it into place, so an interrupted run can
+# never leave a half-written formula.
+updated="$workdir/formula.rb"
+awk -v ver="$version" -v shafile="$checksums" '
+  !vdone && /version "[^"]*"/ {
+    sub(/version "[^"]*"/, "version \"" ver "\"")
+    vdone = 1
+  }
+  /sha256 "[^"]*"/ {
+    if ((getline s < shafile) > 0) {
+      sub(/sha256 "[^"]*"/, "sha256 \"" s "\"")
+    }
+  }
+  { print }
+' "$formula" > "$updated"
+
+cat "$updated" > "$formula"
+
+echo >&2
+echo "✓ Updated $formula → version $version (${#url_templates[@]} checksums refreshed)" >&2
